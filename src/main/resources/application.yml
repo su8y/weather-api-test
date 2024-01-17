@@ -1,0 +1,6 @@
+app:
+  api:
+    url:
+      weather: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
+    key:
+      weather: 3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D

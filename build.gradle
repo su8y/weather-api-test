@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    maven { url "https://repo.osgeo.org/repository/release/"}
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.geotools', name: 'gt-epsg-hsql', version: '22.1'
+    implementation group: 'org.geotools', name: 'gt-referencing', version: '22.1'
+    implementation group: 'org.geotools', name: 'gt-main', version: '22.1'
+    implementation group: 'org.geotools', name: 'gt-shapefile', version: '22.1'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
