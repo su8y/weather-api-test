@@ -19,6 +19,8 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation group: 'org.apache.poi', name: 'poi', version: '5.0.0'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'
     implementation group: 'org.geotools', name: 'gt-epsg-hsql', version: '22.1'
     implementation group: 'org.geotools', name: 'gt-referencing', version: '22.1'
     implementation group: 'org.geotools', name: 'gt-main', version: '22.1'

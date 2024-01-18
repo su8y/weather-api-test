@@ -1,14 +1,12 @@
 package com.example.geomweatherapi;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -20,6 +18,8 @@ import org.opengis.referencing.operation.TransformException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,11 +34,18 @@ public class ShpReader {
         HashMap<String, Object> map = new HashMap<>();
         map.put("url", file.toURI().toURL());
 
-        DataStore dataStore = DataStoreFinder.getDataStore(map);
-        String typeName = dataStore.getTypeNames()[0];
+        // it must be Singleton scope
+        ShapefileDataStore shapefileDataStore = new ShapefileDataStore(file.toURI().toURL());
+        shapefileDataStore.setCharset(Charset.forName("EUC-KR"));
+//        DataStore dataStore = DataStoreFinder.getDataStore(map);
+
+
+        String typeName = shapefileDataStore.getTypeNames()[0];
+
 
         // read shp Features
-        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+        FeatureSource<SimpleFeatureType, SimpleFeature> source = shapefileDataStore.getFeatureSource(typeName);
+//        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
 
         // 좌표값 4326 -> 5179 변경
@@ -65,14 +72,16 @@ public class ShpReader {
         return JTS.transform(feature, transform);
     }
 
-    private Optional<String> getEnglishNameIntersects(SimpleFeature feature, Geometry target) {
+    private Optional<String> getEnglishNameIntersects(SimpleFeature feature, Geometry target) throws UnsupportedEncodingException {
         Geometry defaultGeometry = (Geometry) feature.getDefaultGeometry();
         boolean isIntersects = defaultGeometry.intersects(target);
 
         if (!isIntersects) return Optional.empty();
 
-        Property featureEngNameProperty = feature.getProperty("CTP_ENG_NM");
+        Property featureEngNameProperty = feature.getProperty("CTP_KOR_NM");
         String englishName = featureEngNameProperty.getValue().toString();
+
+
         return Optional.of(englishName);
     }
 }
