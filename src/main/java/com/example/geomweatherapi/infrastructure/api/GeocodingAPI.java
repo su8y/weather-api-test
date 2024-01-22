@@ -3,7 +3,8 @@ package com.example.geomweatherapi.infrastructure.api;
 import com.example.geomweatherapi.domain.vo.Region;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -19,38 +20,36 @@ import java.util.stream.Collectors;
  */
 @Repository
 public class GeocodingAPI {
+    @Value("${myApp.naver.client_id}")
+    public String CLIENT_ID;
+    @Value("${myApp.naver.client_secret_key}")
+    public String CLIENT_SECRET_KEY;
+    @Value("${myApp.naver.rGeocode_url}")
+    public String REVERSE_GEOCODE_URL;
+
 
     private final ObjectMapper objectMapper;
 
     public GeocodingAPI(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
+
     public String geocode(double[] coords) throws IOException, InterruptedException {
-        HttpClient httpClient = HttpClient.newBuilder().build();
-        String coordsToStr = Arrays.stream(coords).mapToObj(String::valueOf).limit(2).collect(Collectors.joining(","));
+        // TODO: 나중에 구현
 
-        URI uri = URI.create("https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?output=json&coords=" + coordsToStr);
-        HttpRequest build = HttpRequest.newBuilder().GET()
-                .GET()
-                .uri(uri)
-                .setHeader("X-NCP-APIGW-API-KEY-ID", "pbvp2xhupu")
-                .setHeader("X-NCP-APIGW-API-KEY", "3MMmJ9aYW0d7AD3G9GSQXIFO8nC4gZOnH4ZfLkYn")
-                .build();
-        HttpResponse<String> response = httpClient.send(build, HttpResponse.BodyHandlers.ofString());
-
-        return response.body();
+        return "";
     }
 
     public Region r_geoCode(double[] coords) throws IOException, InterruptedException {
         HttpClient httpClient = HttpClient.newBuilder().build();
         String coordsToStr = Arrays.stream(coords).mapToObj(String::valueOf).limit(2).collect(Collectors.joining(","));
 
-        URI uri = URI.create("https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?output=json&coords=" + coordsToStr);
+        URI uri = URI.create(REVERSE_GEOCODE_URL + "&coords=" + coordsToStr);
         HttpRequest build = HttpRequest.newBuilder().GET()
                 .GET()
                 .uri(uri)
-                .setHeader("X-NCP-APIGW-API-KEY-ID", "pbvp2xhupu")
-                .setHeader("X-NCP-APIGW-API-KEY", "3MMmJ9aYW0d7AD3G9GSQXIFO8nC4gZOnH4ZfLkYn")
+                .setHeader("X-NCP-APIGW-API-KEY-ID", CLIENT_ID)
+                .setHeader("X-NCP-APIGW-API-KEY", CLIENT_SECRET_KEY)
                 .build();
         HttpResponse<String> response = httpClient.send(build, HttpResponse.BodyHandlers.ofString());
 

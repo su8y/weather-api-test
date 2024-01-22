@@ -4,3 +4,14 @@ app:
       weather: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0
     key:
       weather: 3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D
+
+
+myApp:
+  vilage_fcst_url: http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON
+  mid_land_fcst_url: https://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON
+  mid_temperature_fcst_url: https://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON
+  naver:
+    client_id: pbvp2xhupu
+    client_secret_key: 3MMmJ9aYW0d7AD3G9GSQXIFO8nC4gZOnH4ZfLkYn
+    rGeocode_url: "https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?output=json"
+

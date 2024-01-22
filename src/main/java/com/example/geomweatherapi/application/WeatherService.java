@@ -13,14 +13,20 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class WeatherService {
+
+    private static final int THREE_DAYS = 3;
+    private static final int MAX_DAYS = 10;
+    private static final int EIGHT_DAYS = 8;
+
+
     private final DistrictCodeService districtCodeService;
     private final ForecastInquiryAPI forecastInquiryAPI;
     private final GeocodingAPI geocodingAPI;
     private final ObjectMapper objectMapper;
+
 
     public WeatherService(DistrictCodeService districtCodeService, ForecastInquiryAPI forecastInquiryAPI, GeocodingAPI geocodingAPI, ObjectMapper objectMapper) {
         this.districtCodeService = districtCodeService;
@@ -30,51 +36,35 @@ public class WeatherService {
     }
 
     public Weather getShortTermWeather(WeatherRequest weatherRequest) throws URISyntaxException, JsonProcessingException {
-        double[] coords = weatherRequest.coords();
-        double[] transitedXY = WeatherUtils.transXY(coords[0], coords[1]);
+        double[] transitedXY = WeatherUtils.transLLFromXY(weatherRequest.coords());
 
-        String o =(String) forecastInquiryAPI.currentWeatherInfoBetween1And3Days(transitedXY[0], transitedXY[1]);
-        JsonNode jsonNode = objectMapper.readTree(o);
+        String result = (String) forecastInquiryAPI.currentWeatherInfoBetween1And3Days(transitedXY);
+        JsonNode jsonNode = objectMapper.readTree(result);
 
-        int value = 0;
-        String value1 = "";
-        int value2 = 0;
-        int value3 = 0;
-        String value4 = "";
-        JsonNode jsonNode1 = jsonNode.findValue("item");
-        for (int i = 0; i < jsonNode1.size(); i++) {
-            JsonNode findNode = jsonNode1.get(i);
+        int rainyPercent = 0;
+        String ptv = "";
+        int maxTemperature = 0;
+        int minTemperature = 0;
+        String skyConidtion = "";
+
+        JsonNode itemList = jsonNode.findValue("item");
+        for (int i = 0; i < itemList.size(); i++) {
+            JsonNode findNode = itemList.get(i);
             String cate = findNode.get("category").asText();
 
-            if(cate.equals("POP")) value = findNode.get("fcstValue").asInt();
-            if(cate.equals("PTY")) value1 = findNode.get("fcstValue").asText();
-            if(cate.equals("TMX")) value2 = findNode.get("fcstValue").asInt();
-            if(cate.equals("TMN")) value3 = findNode.get("fcstValue").asInt();
-            if(cate.equals("SKY"))value4 = findNode.get("fcstValue").asText();
+            if (cate.equals("POP")) rainyPercent = findNode.get("fcstValue").asInt();
+            if (cate.equals("PTY")) ptv = findNode.get("fcstValue").asText();
+            if (cate.equals("TMX")) maxTemperature = findNode.get("fcstValue").asInt();
+            if (cate.equals("TMN")) minTemperature = findNode.get("fcstValue").asInt();
+            if (cate.equals("SKY")) skyConidtion = findNode.get("fcstValue").asText();
         }
-//        for (JsonNode node : category) {
-//            String cate = node.asText();
-//            if(cate.equals("POP")){
-//                value = node.findParent("fcstValue").asInt();
-//                System.out.println(value);
-//            }
-//            if(cate.equals("PTY")) value1 = node.findParent("fcstValue").asText();
-//            if(cate.equals("TMX")) value2 = node.findParent("fcstValue").asInt();
-//            if(cate.equals("TMN")) value3 = node.findParent("fcstValue").asInt();
-//            if(cate.equals("SKY")){
-//                System.out.println("SKY FOUND");
-////                System.out.println(node.findParent("fcstValue"));
-//                System.out.println(node.findValue("fcstValue"));
-//                value4 = node.findParent("fcstValue").asText();
-//            }
-//        }
 
         Weather weather = new Weather();
-        weather.setPTV(value1);
-        weather.setMaxTemperature(value2);
-        weather.setMinTemperature(value3);
-        weather.setAmSkyCondition(value4);
-        weather.setAmRainyPercentage(value);
+        weather.setPTV(ptv);
+        weather.setMaxTemperature(maxTemperature);
+        weather.setMinTemperature(minTemperature);
+        weather.setAmSkyCondition(skyConidtion);
+        weather.setAmRainyPercentage(rainyPercent);
 
         return weather;
     }
@@ -87,41 +77,49 @@ public class WeatherService {
         // 기온코드
         String tc = districtCodeService.getTemperatureForecastAreaCode(region);
 
-        int dayOfMonth = weatherRequest.date().getDayOfMonth();
-        int dayOfMonth1 = LocalDate.now().getDayOfMonth();
-        int targetDate = dayOfMonth - dayOfMonth1;
-        if(targetDate < 3) throw new IllegalArgumentException("3일 이전의 데이터는 찾을 수 없습니다.");
+        int targetDate = getTargetDate(weatherRequest.date());
+
+        if (targetDate < THREE_DAYS || targetDate > MAX_DAYS)
+            throw new IllegalArgumentException("3일 이전, 8일 이후의 날씨는 찾을 수 검색할 수 없습니다.");
 
         String taString = (String) forecastInquiryAPI.futureTemperatureWeatherInfoBetween3And10Days(tc);
         JsonNode taNode = objectMapper.readTree(taString);
 
-        String amDate = String.valueOf(targetDate);
-        String pmDate = String.valueOf(targetDate);
 
-        if (targetDate < 8) {
-            amDate += "Am";
-            pmDate += "Pm";
-        }
         String landString = (String) forecastInquiryAPI.futureLandWeatherInfoBetween3And10Days(lc);
         JsonNode landNode = objectMapper.readTree(landString);
 
+        String amDate = String.valueOf(targetDate);
+        String pmDate = String.valueOf(targetDate);
+        if (targetDate < EIGHT_DAYS) {
+            amDate += "Am";
+            pmDate += "Pm";
+        }
+
         int amRainy = landNode.findValue("rnSt" + amDate).asInt();
         int pmRainy = landNode.findValue("rnSt" + pmDate).asInt();
-        String amWeatherState = landNode.findValue("wf" + amDate).asText();
-        String pmWeatherState = landNode.findValue("wf" + pmDate).asText();
-
         int minTemperature = taNode.findValue("taMin" + targetDate).asInt();
         int maxTemperature = taNode.findValue("taMax" + targetDate).asInt();
+        String amWeatherState = landNode.findValue("wf" + amDate).asText();
+        String pmWeatherState = landNode.findValue("wf" + pmDate).asText();
 
         Weather weather = new Weather();
         weather.setAmRainyPercentage(amRainy);
         weather.setPmRainyPercentage(pmRainy);
-        weather.setAmSkyCondition(amWeatherState);
-        weather.setPmSkyCondition(pmWeatherState);
         weather.setMinTemperature(minTemperature);
         weather.setMaxTemperature(maxTemperature);
-
+        weather.setAmSkyCondition(amWeatherState);
+        weather.setPmSkyCondition(pmWeatherState);
 
         return weather;
+    }
+
+
+    private static int getTargetDate(LocalDate request) {
+        int dayOfMonth = request.getDayOfMonth();
+        int dayOfMonth1 = LocalDate.now().getDayOfMonth();
+        int targetDate = dayOfMonth - dayOfMonth1;
+
+        return targetDate;
     }
 }

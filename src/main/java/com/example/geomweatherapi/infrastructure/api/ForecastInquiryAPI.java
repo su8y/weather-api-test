@@ -1,6 +1,7 @@
 package com.example.geomweatherapi.infrastructure.api;
 
 import com.example.geomweatherapi.application.WeatherUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,30 +15,30 @@ import java.util.Date;
 @Repository
 public class ForecastInquiryAPI {
 
-    private static final String VilageFcstUrl = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON";
-    private static final String MidLandFcstInfoServiceUrl = "https://apis.data.go.kr/1360000/MidFcstInfoService/getMidLandFcst?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON";
-    private static final String MidTemperatureFcstInfoServiceUrl = "https://apis.data.go.kr/1360000/MidFcstInfoService/getMidTa?serviceKey=3JCbPRBHUzeIZ%2BLEacuhYBY2fIJA47xcfdBcWp7Pp9B6CT2MTJk8rfXXr4wvuptNfK%2BTAYldFBFkREBraWN0Mw%3D%3D&pageNo=1&numOfRows=10&dataType=JSON";
+    @Value("${myApp.vilage_fcst_url}")
+    private String VilageFcstUrl;
+    @Value("${myApp.mid_land_fcst_url}")
+    private String MidLandFcstInfoServiceUrl;
+    @Value("${myApp.mid_temperature_fcst_url}")
+    private String MidTemperatureFcstInfoServiceUrl;
     private static final String ZERO_MIN = "00";
 
-    public Object currentWeatherInfoBetween1And3Days(double x, double y) throws URISyntaxException {
+    public Object currentWeatherInfoBetween1And3Days(double[] coord) throws URISyntaxException {
+        double x = coord[0], y = coord[1];
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
 
         String formattedDate = dateFormatter.format(new Date());
         String formattedTime = "05" + ZERO_MIN;
 
 
-
         String s = VilageFcstUrl +
                 "&base_date=" + formattedDate +
                 "&base_time=" + formattedTime +
-                "&nx=" + (int) x + "&ny=" +(int) y;
+                "&nx=" + (int) x + "&ny=" + (int) y;
 
-        System.out.println(s);
         RestTemplate restTemplate = new RestTemplate();
-        String forObject = restTemplate.getForObject(new URI(s), String.class);
-        System.out.println(forObject);
 
-        return forObject;
+        return restTemplate.getForObject(new URI(s), String.class);
     }
 
     public Object futureTemperatureWeatherInfoBetween3And10Days(String temperatureCode) throws URISyntaxException {
@@ -74,7 +75,4 @@ public class ForecastInquiryAPI {
         return result;
     }
 
-    private String getRegId(double x, double y) {
-        return "11B00000";
-    }
 }

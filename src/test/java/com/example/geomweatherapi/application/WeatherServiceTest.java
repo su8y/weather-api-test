@@ -14,16 +14,15 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class WeatherServiceTest {
     @Autowired
     private WeatherService weatherService;
 
     private WeatherRequest weatherRequest;
+
     @PostConstruct
-    void setup(){
+    void setup() {
         double x = 126.98935225645432;
         double y = 37.579871128849334;
         weatherRequest = new WeatherRequest(new double[]{x, y}, "EPSG:4326", LocalDate.now());
@@ -41,11 +40,10 @@ class WeatherServiceTest {
     void middleTermTest() throws URISyntaxException, IOException, InterruptedException {
         double x = 126.98935225645432;
         double y = 37.579871128849334;
-        WeatherRequest weatherRequest = new WeatherRequest(new double[]{x, y}, "EPSG:4326", LocalDate.now().plusDays(9));
+        WeatherRequest weatherRequest = new WeatherRequest(new double[]{x, y}, "EPSG:4326", LocalDate.now().plusDays(8));
 
         Weather shortTermWeather = weatherService.getMiddleTermWeather(weatherRequest);
 
         Assertions.assertThat(shortTermWeather.getAmSkyCondition()).isNotBlank();
     }
-
 }

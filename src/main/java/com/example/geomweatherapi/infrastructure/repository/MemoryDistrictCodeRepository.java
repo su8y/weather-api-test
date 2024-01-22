@@ -6,10 +6,12 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.OrderBy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Order(-1)
 @Repository
 public class MemoryDistrictCodeRepository implements DistrictCodeRepository {
     private Map<String, String> temperCode = new ConcurrentHashMap<>();
@@ -31,7 +34,7 @@ public class MemoryDistrictCodeRepository implements DistrictCodeRepository {
         ZipSecureFile.setMinInflateRatio(0);
 
         String filePath = classPathResource.getURI().getPath();
-        XSSFWorkbook sheets = new XSSFWorkbook(classPathResource.getURI().getPath());
+        XSSFWorkbook sheets = new XSSFWorkbook(filePath);
 
         XSSFSheet sheetAt = sheets.getSheetAt(0);
 
@@ -53,7 +56,7 @@ public class MemoryDistrictCodeRepository implements DistrictCodeRepository {
                 String[] split = line.split(",");
                 String code = split[0].trim();
                 String name = split[1].trim();
-                System.out.println(name+":"+code);
+                System.out.println(name + ":" + code);
                 landCode.put(name, code);
             }
         } catch (Exception e) {

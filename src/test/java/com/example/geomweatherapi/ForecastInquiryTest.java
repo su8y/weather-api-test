@@ -14,11 +14,10 @@ public class ForecastInquiryTest {
 
     @Test
     void 테스트() throws UnsupportedEncodingException, URISyntaxException {
-        double x = 37.36145D;
-        double y = 127.111544444444D;
+        double x = 37.36145D, y = 127.111544444444D;
+        double[] coord = {x, y};
 
-        api.currentWeatherInfoBetween1And3Days(x, y);
-        api.currentWeatherInfoBetween1And3Days(x, y);
+        api.currentWeatherInfoBetween1And3Days(coord);
     }
 
 }

@@ -11,8 +11,8 @@ import java.util.Optional;
 @Service
 public class DistrictCodeService {
     private final DistrictCodeRepository repository;
-    private String WITHOUT_CTPRVN_REG_EXP = "특별시$|광역시$";
-    private String WITHOUT_SIG_REG_EXP = "[시군구]*$";
+    private final String WITHOUT_CTPRVN_REG_EXP = "특별시$|광역시$";
+    private final String WITHOUT_SIG_REG_EXP = "[시군구]*$";
 
     public DistrictCodeService(DistrictCodeRepository repository
     ) {
@@ -20,11 +20,10 @@ public class DistrictCodeService {
     }
 
     public String getLandCode(Region region) {
-        if (isNotInKor(region.area0())) return null;
+        if (isNotInKor(region.area0())) throw new IllegalArgumentException("한국내 에서만 사용 가능 합니다.");
 
-        String city = cityMeter(region.area1());
-        String sig = sigMeter(region.area2());
-        System.out.println(city + " " + sig);
+        String city = cityWithoutImpurities(region.area1());
+        String sig = sigWithoutImpurities(region.area2());
 
         Optional<String> codeByCity = repository.findLandForecastAreaCodeByCity(city);
         if (codeByCity.isPresent()) {
@@ -40,8 +39,8 @@ public class DistrictCodeService {
     public String getTemperatureForecastAreaCode(Region region) {
         if (isNotInKor(region.area0())) return null;
 
-        String city = cityMeter(region.area1());
-        String sig = sigMeter(region.area2());
+        String city = cityWithoutImpurities(region.area1());
+        String sig = sigWithoutImpurities(region.area2());
 
         Optional<String> codeByCity = repository.findTemperatureForecastAreaCodeByCity(city);
         if (codeByCity.isPresent()) {
@@ -54,11 +53,12 @@ public class DistrictCodeService {
         throw new IllegalArgumentException("해당 지역을 기온예보코드에서 찾을 수 없습니다.");
     }
 
-    private String cityMeter(String city) {
+
+    private String cityWithoutImpurities(String city) {
         return city.replaceAll(WITHOUT_CTPRVN_REG_EXP, "");
     }
 
-    private String sigMeter(String sig) {
+    private String sigWithoutImpurities(String sig) {
         return sig.replaceAll(WITHOUT_SIG_REG_EXP, "");
     }
 

@@ -1,14 +1,5 @@
 package com.example.geomweatherapi.application;
 
-import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.IOException;
-import java.util.Iterator;
-
 public class WeatherUtils {
     private static final double RE = 6371.00877; // 지구 반경(km)
     private static final double GRID = 5.0; // 격자 간격(km)
@@ -22,7 +13,10 @@ public class WeatherUtils {
     private static final double DEGRAD = Math.PI / 180.0;
     private static final double RADDEG = 180.0 / Math.PI;
 
-    public static double[] transXY(double x,double y){
+    public static double[] transLLFromXY(double[] coord) {
+        final double x = coord[0];
+        final double y = coord[1];
+
         var re = RE / GRID;
         var slat1 = SLAT1 * DEGRAD;
         var slat2 = SLAT2 * DEGRAD;
@@ -49,7 +43,10 @@ public class WeatherUtils {
         return rs;
     }
 
-    public static double[] transLL(double x,double y){
+    public static double[] transXYFromLL(double[] coord) {
+        final double x = coord[0];
+        final double y = coord[1];
+
         var re = RE / GRID;
         var slat1 = SLAT1 * DEGRAD;
         var slat2 = SLAT2 * DEGRAD;
@@ -66,12 +63,10 @@ public class WeatherUtils {
         var theta = 0.0;
 
 
-
-
         var xn = x - XO;
         var yn = ro - y + YO;
         var ra = Math.sqrt(xn * xn + yn * yn);
-        if (sn < 0.0){
+        if (sn < 0.0) {
             ra = -ra;
         }
         var alat = Math.pow((re * sf / ra), (1.0 / sn));
@@ -79,13 +74,11 @@ public class WeatherUtils {
 
         if (Math.abs(xn) <= 0.0) {
             theta = 0.0;
-        }
-        else {
+        } else {
             if (Math.abs(yn) <= 0.0) {
                 theta = Math.PI * 0.5;
                 if (xn < 0.0) theta = -theta;
-            }
-            else theta = Math.atan2(xn, yn);
+            } else theta = Math.atan2(xn, yn);
         }
         var alon = theta / sn + olon;
         rs[0] = alat * RADDEG;
